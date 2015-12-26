@@ -78,53 +78,52 @@ Garage.configuration.strategy = Garage::Strategy::AuthServer
 
 The following authentication strategies are available.
 
-- `Garage::Strategy::NoAuthentication` - Does not authenticate request and
-    does not verify permission and access on resource operation. For non-public,
-    internal-use Garage application.
-- `Garage::Strategy::Test` - Trust request thoroughly, and build access token
-    from request headers. For testing or prototyping.
-- `Garage::Strategy::Doorkeeper` - Authenticate request with doorkeeper gem.
-    To use this strategy, bundle [garage-doorkeeper gem](https://github.com/cookpad/garage-doorkeeper).
-- `Garage::Strategy::AuthServer` - Delegate authentication to OAuth server.
-    This auth strategy has configurations.
+- `Garage::Strategy::NoAuthentication` - 
+    リクエストを認証せず、リソースオペレーションに許可を与えない。
+    これは、公表されていない内部用のガレージアプリケーションのためのもの
+- `Garage::Strategy::Test` - テストやプロトタイプのためのもの。 リクエストを完全に信用し、リクエストヘッダーからアクセストークンを作る。
+- `Garage::Strategy::Doorkeeper` -doorkeeperでリクエストを承認する。
+   このStrategyを使うためには [garage-doorkeeper gem](https://github.com/cookpad/garage-doorkeeper)をbundle installする。
+- `Garage::Strategy::AuthServer` -
+    認証をOAuthサーバーに委任する。このStrategyは設定を持っている。
+
 
 ## Delegate Authentication/Authorization to your OAuth server
 
-To delegate auth to your OAuth server, use `Garage::Strategy::AuthServer` strategy.
+
+
+#####To delegate auth to your OAuth server, use `Garage::Strategy::AuthServer` strategy.
 Then configure auth server strategy:
 
-- `Garage.configuration.auth_server_url` - A full url of your OAuth server's
-    access token validation endpoint. i.e. `https://example.com/token`.
-- `Garage.configuration.auth_server_host` - A host header value to request to
-    your OAuth server. Can be empty.
-- `Garage.configuration.auth_server_timeout` - A read timeout second. Default
+- `Garage.configuration.auth_server_url` - OAuthサーバーのアクセストークンのバリデーションエンドポイントのURLそのもの。`https://example.com/token`
+
+- `Garage.configuration.auth_server_host` -OAuthサーバーのホストのヘッダーvalue。空欄でもOK。
+- `Garage.configuration.auth_server_timeout` - 読み込みのタイムアウトの時間（秒）。デフォルト設定では1秒となっている。
     is 1 second.
 
 The OAuth server must response a json with following structure.
 
-- `token`(string) - OAuth access token value.
-- `token_type` (string) - OAuth access token value. i.e. `bearer` type.
-- `scope` (string) - OAuth scopes separated by spaces. i.e. `public read_user`.
-- `application_id` (integer) - OAuth application id of the access token.
-- `resource_owner_id` (integer, null) - Resource owner id of the access token.
-- `expired_at` (string, null) - Expire datetime with string representation.
-- `revoked_at` (string, null) - Revoked datetime with string representation.
+- `token`(string) - アクセストークンの値.
+- `token_type` (string) - アクセストークンvalue。 例：`bearer` type.
+- `scope` (string) -スペースで区切られたscope。例： `public read_user`.
+- `application_id` (integer) - アクセストークンのアプリケーションid。
+- `resource_owner_id` (integer, null) -アクセストークンのリソースオーナーid。
+- `expired_at` (string, null) - 文字列で表示された、期限のdatetime。
+- `revoked_at` (string, null) - 文字列で表示された、無効になった時のdatetime。
 
 When requested access token is invalid, OAuth server must response 401.
 
-## Customize Authentication/Authorization
+## Customize Authentication/Authorization　　
 
-Garage supports customizable Authentication/Authorization strategy.
-The Strategy has some conventions to follow.
 
-- Offer OAuth access token via `access_token` method. With no access token case
-    (does not authenticate request) `access_token` should return `nil`.
-- Register `verify_auth` hook as before filter in `included` block if
-    authenticate request. Or register custom authentication hook. The custom
-    authentication hook should response unauthorized using
-    `unauthorized_render_options` when fails to authenticate a request.
-- Offer whether verify permission and access in `RestfulActions` via
-    `verify_permission` method. Return `true` to verify them.
+
+
+Garage は、カスタマイズ可能なStrategyを提供しています。以下のような慣習があります。
+
+
+- access_tokenメソッドを使って、OAuthアクセストークンを提供する。アクセストークンが無い場合やリクエストが認証されない時はaccess_tokenはnilを返す。
+- 含まれているブロックの中のfilterの前で、verify_auth hookを登録する。もしくはカスタム認証hookを登録する。リクエストが認証されなかった場合、カスタム認証hookは、unauthorized_render_optionsを使って非認証を返す。
+- RestfulAction内で、verify_permissionメソッドを使って認証とアクセスを提供する。
 
 ```ruby
 module MyStrategy
